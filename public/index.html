@@ -1,253 +1,2876 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Email Sender</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML Email Editor Pro</title>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
     />
-
-    <!-- CodeMirror Styles -->
     <link
-      rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css"
+      rel="stylesheet"
     />
     <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/dialog/dialog.min.css"
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/material-darker.min.css"
     />
     <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/matchesonscrollbar.min.css"
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.css"
     />
-
     <style>
-      body {
-        padding-top: 40px;
-        background: #f8f9fa;
-      }
-      /* .CodeMirror {
-        height: 300px;
-        border: 1px solid #ced4da;
-        font-size: 15px;
-        border-radius: 5px;
-      } */
-      .CodeMirror {
-        height: 500px !important; /* increased from 300px */
-        border: 1px solid #ced4da;
-        font-size: 15px;
-        border-radius: 5px;
+      :root {
+        --bg-primary: #f8f9fa;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #f1f3f5;
+        --text-primary: #212529;
+        --text-secondary: #495057;
+        --text-muted: #6c757d;
+        --border-color: #dee2e6;
+        --border-light: #e9ecef;
+        --accent: #007bff;
+        --accent-hover: #0056b3;
+        --success: #28a745;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --info: #17a2b8;
+        --shadow: rgba(0, 0, 0, 0.1);
+        --shadow-lg: rgba(0, 0, 0, 0.15);
+        --header-bg: white;
+        --toolbar-bg: #f8f9fa;
+        --cm-bg: #ffffff;
       }
 
-      #livePreview {
-        height: 500px;
-        background: white;
-        border: 1px solid #ced4da;
+      [data-theme='dark'] {
+        --bg-primary: #1a1a2e;
+        --bg-secondary: #16213e;
+        --bg-tertiary: #0f3460;
+        --text-primary: #e0e0e0;
+        --text-secondary: #b0b0b0;
+        --text-muted: #888;
+        --border-color: #2a2a4a;
+        --border-light: #252545;
+        --accent: #4dabf7;
+        --accent-hover: #339af0;
+        --shadow: rgba(0, 0, 0, 0.3);
+        --shadow-lg: rgba(0, 0, 0, 0.4);
+        --header-bg: #16213e;
+        --toolbar-bg: #1a1a2e;
+        --cm-bg: #1e1e2e;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.6;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+
+      .header {
+        background: var(--header-bg);
+        border-bottom: 2px solid var(--border-light);
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 4px var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .header h1 {
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .theme-toggle {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s;
+      }
+
+      .theme-toggle:hover {
+        background: var(--accent);
+        color: white;
+      }
+
+      .auto-save-indicator {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .auto-save-indicator .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--success);
+        display: inline-block;
+      }
+
+      .container {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 15px;
+      }
+
+      /* Email Form */
+      .email-form {
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px var(--shadow);
+        margin-bottom: 15px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 12px;
+      }
+
+      .form-row-single {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 5px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .form-control {
+        padding: 10px 14px;
+        border: 2px solid var(--border-light);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+      }
+
+      .cc-bcc-toggle {
+        font-size: 0.85rem;
+        color: var(--accent);
+        cursor: pointer;
+        user-select: none;
+        margin-top: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .cc-bcc-toggle:hover {
+        text-decoration: underline;
+      }
+
+      .cc-bcc-fields {
+        display: none;
+        margin-top: 12px;
+      }
+
+      .cc-bcc-fields.show {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      /* Editor Section */
+      .editor-section {
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        box-shadow: 0 2px 10px var(--shadow);
+        overflow: hidden;
+      }
+
+      .editor-header {
+        background: var(--toolbar-bg);
+        border-bottom: 1px solid var(--border-light);
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .editor-title {
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .toolbar-btn {
+        padding: 6px 10px;
+        border: 1px solid var(--border-color);
         border-radius: 5px;
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 0.82rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+      }
+
+      .toolbar-btn:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+
+      .toolbar-sep {
+        width: 1px;
+        height: 24px;
+        background: var(--border-color);
+        margin: 0 3px;
+      }
+
+      /* Snippet Toolbar */
+      .snippet-toolbar {
+        background: var(--toolbar-bg);
+        border-bottom: 1px solid var(--border-light);
+        padding: 8px 15px;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-wrap: wrap;
+        overflow-x: auto;
+      }
+
+      .snippet-toolbar .snippet-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-right: 5px;
+        white-space: nowrap;
+      }
+
+      .snippet-btn {
+        padding: 4px 10px;
+        border: 1px dashed var(--border-color);
+        border-radius: 15px;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.78rem;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+
+      .snippet-btn:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+        border-style: solid;
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 500px;
+      }
+
+      .code-panel {
+        border-right: 1px solid var(--border-light);
+      }
+
+      .code-header,
+      .preview-header {
+        background: var(--toolbar-bg);
+        padding: 8px 15px;
+        border-bottom: 1px solid var(--border-light);
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+      }
+
+      .CodeMirror {
+        height: 500px !important;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        border: none;
+        background: var(--cm-bg);
+      }
+
+      [data-theme='dark'] .CodeMirror {
+        background: #1e1e2e;
+        color: #cdd6f4;
+      }
+
+      [data-theme='dark'] .CodeMirror-gutters {
+        background: #181825;
+        border-right: 1px solid #313244;
+      }
+
+      [data-theme='dark'] .CodeMirror-linenumber {
+        color: #6c7086;
+      }
+      [data-theme='dark'] .CodeMirror-cursor {
+        border-left: 2px solid #cdd6f4;
+      }
+      [data-theme='dark'] .CodeMirror-selected {
+        background: #45475a;
+      }
+      [data-theme='dark'] .cm-tag {
+        color: #89b4fa;
+      }
+      [data-theme='dark'] .cm-attribute {
+        color: #f9e2af;
+      }
+      [data-theme='dark'] .cm-string {
+        color: #a6e3a1;
+      }
+      [data-theme='dark'] .cm-comment {
+        color: #6c7086;
+      }
+      [data-theme='dark'] .cm-property {
+        color: #89dceb;
+      }
+      [data-theme='dark'] .cm-keyword {
+        color: #cba6f7;
+      }
+      [data-theme='dark'] .cm-number {
+        color: #fab387;
+      }
+      [data-theme='dark'] .cm-def {
+        color: #89b4fa;
+      }
+
+      .CodeMirror-gutters {
+        background: var(--toolbar-bg);
+        border-right: 1px solid var(--border-light);
+      }
+
+      .CodeMirror-linenumber {
+        color: var(--text-muted);
+        padding: 0 8px;
+      }
+
+      .preview-panel {
+        background: var(--bg-secondary);
+      }
+
+      .preview-frame {
+        width: 100%;
+        height: 500px;
+        border: none;
+        background: white;
+        transition: all 0.3s;
+      }
+
+      /* Preview Size Modes */
+      .preview-frame.mobile {
+        max-width: 375px;
+        margin: 0 auto;
+        display: block;
+        border-left: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+      }
+
+      .preview-frame.tablet {
+        max-width: 768px;
+        margin: 0 auto;
+        display: block;
+        border-left: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+      }
+
+      .preview-modes {
+        display: flex;
+        gap: 3px;
+      }
+
+      .preview-mode-btn {
+        padding: 4px 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+      }
+
+      .preview-mode-btn.active,
+      .preview-mode-btn:hover {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      /* Stats Bar */
+      .stats-bar {
+        background: var(--toolbar-bg);
+        border-top: 1px solid var(--border-light);
+        padding: 6px 15px;
+        display: flex;
+        gap: 20px;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Action Buttons */
+      .action-buttons {
+        background: var(--bg-secondary);
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px var(--shadow);
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+      }
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+      .btn-success:hover {
+        background: #1e7e34;
+        transform: translateY(-2px);
+      }
+      .btn-secondary {
+        background: var(--text-muted);
+        color: white;
+      }
+      .btn-secondary:hover {
+        background: #545b62;
+        transform: translateY(-2px);
+      }
+      .btn-warning {
+        background: var(--warning);
+        color: #212529;
+      }
+      .btn-warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+      }
+      .btn-info {
+        background: var(--info);
+        color: white;
+      }
+      .btn-info:hover {
+        background: #138496;
+        transform: translateY(-2px);
+      }
+      .btn-danger {
+        background: var(--danger);
+        color: white;
+      }
+      .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+      }
+      .btn-outline {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 2px solid var(--border-color);
+      }
+      .btn-outline:hover {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+        transform: translateY(-2px);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      .status {
+        width: 100%;
+        margin-top: 10px;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
+        display: none;
+        font-size: 0.9rem;
+      }
+
+      .status.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+      }
+      .status.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+      }
+      .status.loading {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+      }
+      .status.info {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+      }
+
+      /* Modal */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-overlay.show {
+        display: flex;
+      }
+
+      .modal {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 25px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal h3 {
+        margin-bottom: 15px;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .modal-close {
+        float: right;
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        cursor: pointer;
+        color: var(--text-muted);
+      }
+
+      .modal-close:hover {
+        color: var(--danger);
+      }
+
+      .modal-body {
+        margin-top: 10px;
+      }
+
+      .modal-body .form-group {
+        margin-bottom: 12px;
+      }
+
+      .modal-body .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: block;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+      }
+
+      .modal-body .form-control {
+        width: 100%;
+      }
+
+      .modal-footer {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      /* Template Gallery */
+      .template-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+        margin-top: 10px;
+      }
+
+      .template-card {
+        border: 2px solid var(--border-light);
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .template-card:hover {
+        border-color: var(--accent);
+        background: rgba(0, 123, 255, 0.05);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px var(--shadow);
+      }
+
+      .template-card i {
+        font-size: 2rem;
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+
+      .template-card h4 {
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+      }
+
+      .template-card p {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+      }
+
+      /* Color Picker Tool */
+      .color-picker-tool {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .color-input-wrap {
+        position: relative;
+        display: inline-block;
+      }
+
+      .color-input-wrap input[type='color'] {
+        width: 30px;
+        height: 30px;
+        border: 2px solid var(--border-color);
+        border-radius: 5px;
+        padding: 2px;
+        cursor: pointer;
+      }
+
+      .color-hex {
+        padding: 4px 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.8rem;
+        width: 80px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+      }
+
+      .color-copy-btn {
+        padding: 4px 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.75rem;
+      }
+
+      .color-copy-btn:hover {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      /* Fullscreen */
+      .editor-section.fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 999;
+        border-radius: 0;
+      }
+
+      .editor-section.fullscreen .main-content {
+        min-height: calc(100vh - 100px);
+      }
+      .editor-section.fullscreen .CodeMirror {
+        height: calc(100vh - 140px) !important;
+      }
+      .editor-section.fullscreen .preview-frame {
+        height: calc(100vh - 140px);
+      }
+
+      /* Keyboard Shortcuts Popover */
+      .shortcuts-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .shortcut-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 10px;
+        background: var(--bg-tertiary);
+        border-radius: 5px;
+        font-size: 0.8rem;
+      }
+
+      .shortcut-item kbd {
+        background: var(--bg-secondary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        font-family: monospace;
+        font-size: 0.75rem;
+      }
+
+      /* Toast Notification */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        z-index: 2000;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      .toast.success {
+        background: #28a745;
+        color: white;
+      }
+      .toast.error {
+        background: #dc3545;
+        color: white;
+      }
+      .toast.info {
+        background: #17a2b8;
+        color: white;
+      }
+
+      /* Send History */
+      .history-list {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border-light);
+        font-size: 0.85rem;
+      }
+
+      .history-item:last-child {
+        border-bottom: none;
+      }
+      .history-item .history-to {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .history-item .history-subject {
+        color: var(--text-muted);
+        margin-left: 10px;
+      }
+      .history-item .history-time {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+        margin-left: 10px;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 30px;
+        color: var(--text-muted);
+      }
+
+      .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        display: block;
+      }
+
+      /* Mobile */
+      @media (max-width: 768px) {
+        .header {
+          flex-direction: column;
+          gap: 10px;
+          padding: 10px 15px;
+        }
+        .header h1 {
+          font-size: 1.2rem;
+        }
+        .container {
+          padding: 10px;
+        }
+        .form-row,
+        .form-row-single,
+        .cc-bcc-fields.show {
+          grid-template-columns: 1fr;
+        }
+        .email-form {
+          padding: 15px;
+        }
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+        .code-panel {
+          border-right: none;
+          border-bottom: 1px solid var(--border-light);
+        }
+        .CodeMirror {
+          height: 350px !important;
+        }
+        .preview-frame {
+          height: 350px;
+        }
+        .editor-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .toolbar {
+          width: 100%;
+          overflow-x: auto;
+          padding-bottom: 5px;
+        }
+        .snippet-toolbar {
+          overflow-x: auto;
+        }
+        .action-buttons {
+          flex-direction: column;
+        }
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+        .shortcuts-list {
+          grid-template-columns: 1fr;
+        }
+        .template-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header h1 {
+          font-size: 1rem;
+        }
+        .CodeMirror {
+          height: 280px !important;
+          font-size: 12px;
+        }
+        .preview-frame {
+          height: 280px;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h2 class="mb-4 text-center text-primary">
-        📨 HTML Email Template Sender
-      </h2>
-
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label for="to" class="form-label">Recipient Email</label>
-          <input
-            type="email"
-            class="form-control"
-            id="to"
-            placeholder="example@gmail.com"
-            required
-          />
-        </div>
-        <div class="col-md-6">
-          <label for="subject" class="form-label">Subject</label>
-          <input
-            type="text"
-            class="form-control"
-            id="subject"
-            placeholder="Enter email subject"
-            required
-          />
-        </div>
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1><i class="fas fa-envelope-open-text"></i> Email Editor Pro</h1>
       </div>
-
-      <div class="row mt-4">
-        <!-- Editor Column -->
-        <div class="col-md-6 mb-3">
-          <label for="htmlCode" class="form-label">HTML Editor</label>
-          <textarea id="htmlCode"></textarea>
+      <div class="header-right">
+        <div class="auto-save-indicator" id="autoSaveIndicator">
+          <span class="dot"></span> Auto-saved
         </div>
-
-        <!-- Preview Column -->
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Live Preview</label>
-          <iframe
-            id="livePreview"
-            class="w-100 border rounded"
-            style="height: 500px; background: white"
-          ></iframe>
-        </div>
-      </div>
-
-      <div class="d-flex gap-2 mt-3">
-        <button onclick="sendEmail()" class="btn btn-success">
-          Send Email
+        <button
+          class="theme-toggle"
+          onclick="toggleTheme()"
+          title="Toggle Dark Mode"
+        >
+          <i class="fas fa-moon" id="themeIcon"></i>
         </button>
-        <button onclick="beautifyCode()" class="btn btn-outline-secondary">
-          ✨ Beautify HTML
+        <button
+          class="toolbar-btn"
+          onclick="showShortcutsModal()"
+          title="Keyboard Shortcuts"
+        >
+          <i class="fas fa-keyboard"></i>
         </button>
-      </div>
-
-      <div class="mt-3">
-        <p id="status" class="fw-bold text-success"></p>
+        <button
+          class="toolbar-btn"
+          onclick="showHistoryModal()"
+          title="Send History"
+        >
+          <i class="fas fa-history"></i>
+        </button>
       </div>
     </div>
 
-    <!-- Status Modal -->
-    <div
-      class="modal fade"
-      id="messageModal"
-      tabindex="-1"
-      aria-labelledby="messageModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-success">
-          <div class="modal-header">
-            <h5 class="modal-title" id="messageModalLabel">Status</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+    <div class="container">
+      <!-- Email Form -->
+      <div class="email-form">
+        <form id="emailForm" onsubmit="return false;">
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-envelope"></i> Recipient (To)</label>
+              <input
+                type="email"
+                id="to"
+                class="form-control"
+                placeholder="recipient@example.com"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-tag"></i> Subject</label>
+              <input
+                type="text"
+                id="subject"
+                class="form-control"
+                placeholder="Enter email subject"
+                required
+              />
+            </div>
           </div>
-          <div class="modal-body" id="modalMessage">Message goes here</div>
-          <div class="modal-footer">
+          <span class="cc-bcc-toggle" onclick="toggleCcBcc()">
+            <i class="fas fa-plus-circle"></i>
+            <span id="ccBccToggleText">Show CC / BCC</span>
+          </span>
+          <div class="cc-bcc-fields" id="ccBccFields">
+            <div class="form-group">
+              <label><i class="fas fa-copy"></i> CC</label>
+              <input
+                type="text"
+                id="cc"
+                class="form-control"
+                placeholder="cc1@example.com, cc2@example.com"
+              />
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-eye-slash"></i> BCC</label>
+              <input
+                type="text"
+                id="bcc"
+                class="form-control"
+                placeholder="bcc1@example.com, bcc2@example.com"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Editor Section -->
+      <div class="editor-section" id="editorSection">
+        <!-- Main Toolbar -->
+        <div class="editor-header">
+          <div class="editor-title">
+            <i class="fas fa-code"></i> HTML Editor
+          </div>
+          <div class="toolbar">
             <button
               type="button"
-              class="btn btn-outline-secondary"
-              data-bs-dismiss="modal"
+              class="toolbar-btn"
+              onclick="undoEditor()"
+              title="Undo (Ctrl+Z)"
             >
-              Close
+              <i class="fas fa-undo"></i>
+            </button>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="redoEditor()"
+              title="Redo (Ctrl+Y)"
+            >
+              <i class="fas fa-redo"></i>
+            </button>
+            <div class="toolbar-sep"></div>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="formatHTML()"
+              title="Format HTML"
+            >
+              <i class="fas fa-magic"></i> Format
+            </button>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="minifyHTML()"
+              title="Minify HTML"
+            >
+              <i class="fas fa-compress-alt"></i> Minify
+            </button>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="validateHTML()"
+              title="Validate HTML"
+            >
+              <i class="fas fa-check-circle"></i> Validate
+            </button>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="normalizeHTML()"
+              title="Fix missing tags & normalize HTML structure"
+            >
+              <i class="fas fa-wrench"></i> Normalize
+            </button>
+            <div class="toolbar-sep"></div>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="showTemplateModal()"
+              title="Email Templates"
+            >
+              <i class="fas fa-th-large"></i> Templates
+            </button>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="showInsertLinkModal()"
+              title="Insert Link"
+            >
+              <i class="fas fa-link"></i>
+            </button>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="showInsertImageModal()"
+              title="Insert Image"
+            >
+              <i class="fas fa-image"></i>
+            </button>
+            <div class="toolbar-sep"></div>
+            <div class="color-picker-tool">
+              <div class="color-input-wrap">
+                <input
+                  type="color"
+                  id="colorPicker"
+                  value="#007bff"
+                  title="Pick a color"
+                />
+              </div>
+              <input
+                type="text"
+                class="color-hex"
+                id="colorHex"
+                value="#007bff"
+                readonly
+              />
+              <button
+                class="color-copy-btn"
+                onclick="copyColor()"
+                title="Copy color code"
+              >
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <div class="toolbar-sep"></div>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="findReplace()"
+              title="Find & Replace (Ctrl+H)"
+            >
+              <i class="fas fa-search"></i>
+            </button>
+            <button
+              type="button"
+              class="toolbar-btn"
+              onclick="toggleFullscreen()"
+              title="Toggle Fullscreen (F11)"
+            >
+              <i class="fas fa-expand" id="fullscreenIcon"></i>
             </button>
           </div>
         </div>
+
+        <!-- Snippet Toolbar -->
+        <div class="snippet-toolbar">
+          <span class="snippet-label"
+            ><i class="fas fa-puzzle-piece"></i> Insert:</span
+          >
+          <button class="snippet-btn" onclick="insertSnippet('button')">
+            <i class="fas fa-hand-pointer"></i> Button
+          </button>
+          <button class="snippet-btn" onclick="insertSnippet('table')">
+            <i class="fas fa-table"></i> Table
+          </button>
+          <button class="snippet-btn" onclick="insertSnippet('image')">
+            <i class="fas fa-image"></i> Image
+          </button>
+          <button class="snippet-btn" onclick="insertSnippet('divider')">
+            <i class="fas fa-minus"></i> Divider
+          </button>
+          <button class="snippet-btn" onclick="insertSnippet('spacer')">
+            <i class="fas fa-arrows-alt-v"></i> Spacer
+          </button>
+          <button class="snippet-btn" onclick="insertSnippet('heading')">
+            <i class="fas fa-heading"></i> Heading
+          </button>
+          <button class="snippet-btn" onclick="insertSnippet('columns')">
+            <i class="fas fa-columns"></i> 2-Column
+          </button>
+          <button class="snippet-btn" onclick="insertSnippet('social')">
+            <i class="fas fa-share-alt"></i> Social Links
+          </button>
+          <button class="snippet-btn" onclick="insertSnippet('footer')">
+            <i class="fas fa-shoe-prints"></i> Footer
+          </button>
+          <button class="snippet-btn" onclick="insertSnippet('unsubscribe')">
+            <i class="fas fa-ban"></i> Unsubscribe
+          </button>
+        </div>
+
+        <!-- Main Content: Editor + Preview -->
+        <div class="main-content">
+          <div class="code-panel">
+            <div class="code-header">
+              <span><i class="fas fa-code"></i> HTML Code</span>
+              <span class="file-info"
+                >Ln <span id="cursorLine">1</span>, Col
+                <span id="cursorCol">1</span></span
+              >
+            </div>
+            <div id="htmlEditor"></div>
+          </div>
+          <div class="preview-panel">
+            <div class="preview-header">
+              <span><i class="fas fa-eye"></i> Live Preview</span>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <div class="preview-modes">
+                  <button
+                    class="preview-mode-btn active"
+                    data-mode="desktop"
+                    onclick="setPreviewMode('desktop')"
+                    title="Desktop"
+                  >
+                    <i class="fas fa-desktop"></i>
+                  </button>
+                  <button
+                    class="preview-mode-btn"
+                    data-mode="tablet"
+                    onclick="setPreviewMode('tablet')"
+                    title="Tablet"
+                  >
+                    <i class="fas fa-tablet-alt"></i>
+                  </button>
+                  <button
+                    class="preview-mode-btn"
+                    data-mode="mobile"
+                    onclick="setPreviewMode('mobile')"
+                    title="Mobile"
+                  >
+                    <i class="fas fa-mobile-alt"></i>
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="toolbar-btn"
+                  onclick="openPreviewNewTab()"
+                  title="Open in New Tab"
+                >
+                  <i class="fas fa-external-link-alt"></i>
+                </button>
+              </div>
+            </div>
+            <iframe class="preview-frame" id="previewFrame"></iframe>
+          </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+          <div class="stat-item">
+            <i class="fas fa-file-code"></i> Lines:
+            <strong id="lineCount">0</strong>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-font"></i> Characters:
+            <strong id="charCount">0</strong>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-text-width"></i> Words:
+            <strong id="wordCount">0</strong>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-weight-hanging"></i> Size:
+            <strong id="sizeCount">0 B</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="sendBtn"
+          onclick="sendEmail()"
+        >
+          <i class="fas fa-paper-plane"></i> Send Email
+        </button>
+        <button type="button" class="btn btn-info" onclick="sendTestEmail()">
+          <i class="fas fa-vial"></i> Send Test
+        </button>
+        <button type="button" class="btn btn-success" onclick="updatePreview()">
+          <i class="fas fa-eye"></i> Preview
+        </button>
+        <button type="button" class="btn btn-warning" onclick="downloadHTML()">
+          <i class="fas fa-download"></i> Download
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline"
+          onclick="copyToClipboard()"
+        >
+          <i class="fas fa-clipboard"></i> Copy HTML
+        </button>
+        <button type="button" class="btn btn-outline" onclick="importHTML()">
+          <i class="fas fa-upload"></i> Import
+        </button>
+        <button type="button" class="btn btn-danger" onclick="clearAll()">
+          <i class="fas fa-trash-alt"></i> Clear
+        </button>
+        <input
+          type="file"
+          id="importFile"
+          accept=".html,.htm,.txt"
+          style="display: none"
+          onchange="handleImport(event)"
+        />
+        <div class="status" id="status"></div>
       </div>
     </div>
 
-    <!-- JS Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Template Modal -->
+    <div class="modal-overlay" id="templateModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('templateModal')">
+          &times;
+        </button>
+        <h3><i class="fas fa-th-large"></i> Email Templates</h3>
+        <div class="template-grid">
+          <div class="template-card" onclick="insertTemplate('welcome')">
+            <i class="fas fa-hand-sparkles"></i>
+            <h4>Welcome</h4>
+            <p>New user onboarding</p>
+          </div>
+          <div class="template-card" onclick="insertTemplate('newsletter')">
+            <i class="fas fa-newspaper"></i>
+            <h4>Newsletter</h4>
+            <p>Content digest</p>
+          </div>
+          <div class="template-card" onclick="insertTemplate('promotional')">
+            <i class="fas fa-bullhorn"></i>
+            <h4>Promotional</h4>
+            <p>Sale & offers</p>
+          </div>
+          <div class="template-card" onclick="insertTemplate('invoice')">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <h4>Invoice</h4>
+            <p>Billing & receipts</p>
+          </div>
+          <div class="template-card" onclick="insertTemplate('notification')">
+            <i class="fas fa-bell"></i>
+            <h4>Notification</h4>
+            <p>Alerts & updates</p>
+          </div>
+          <div class="template-card" onclick="insertTemplate('minimal')">
+            <i class="fas fa-feather-alt"></i>
+            <h4>Minimal</h4>
+            <p>Clean & simple</p>
+          </div>
+          <div class="template-card" onclick="insertTemplate('password_reset')">
+            <i class="fas fa-key"></i>
+            <h4>Password Reset</h4>
+            <p>Security email</p>
+          </div>
+          <div class="template-card" onclick="insertTemplate('event')">
+            <i class="fas fa-calendar-alt"></i>
+            <h4>Event Invite</h4>
+            <p>Event invitation</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- CodeMirror JS -->
+    <!-- Insert Link Modal -->
+    <div class="modal-overlay" id="linkModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('linkModal')">
+          &times;
+        </button>
+        <h3><i class="fas fa-link"></i> Insert Link</h3>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Link Text</label>
+            <input
+              type="text"
+              id="linkText"
+              class="form-control"
+              placeholder="Click here"
+            />
+          </div>
+          <div class="form-group">
+            <label>URL</label>
+            <input
+              type="url"
+              id="linkUrl"
+              class="form-control"
+              placeholder="https://example.com"
+            />
+          </div>
+          <div class="form-group">
+            <label>Style</label>
+            <select id="linkStyle" class="form-control">
+              <option value="text">Text Link</option>
+              <option value="button">Button Link</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('linkModal')">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="insertLink()">Insert</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insert Image Modal -->
+    <div class="modal-overlay" id="imageModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('imageModal')">
+          &times;
+        </button>
+        <h3><i class="fas fa-image"></i> Insert Image</h3>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Image URL</label>
+            <input
+              type="url"
+              id="imageUrl"
+              class="form-control"
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+          <div class="form-group">
+            <label>Alt Text</label>
+            <input
+              type="text"
+              id="imageAlt"
+              class="form-control"
+              placeholder="Image description"
+            />
+          </div>
+          <div class="form-group">
+            <label>Width (px or %)</label>
+            <input
+              type="text"
+              id="imageWidth"
+              class="form-control"
+              placeholder="600"
+              value="100%"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('imageModal')">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="insertImage()">
+            Insert
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div class="modal-overlay" id="shortcutsModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('shortcutsModal')">
+          &times;
+        </button>
+        <h3><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <span>Send Email</span><kbd>Ctrl+Enter</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span>Save / Download</span><kbd>Ctrl+S</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span>Format HTML</span><kbd>Ctrl+Shift+F</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span>Find & Replace</span><kbd>Ctrl+H</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span>Copy HTML</span><kbd>Ctrl+Shift+C</kbd>
+          </div>
+          <div class="shortcut-item"><span>Fullscreen</span><kbd>F11</kbd></div>
+          <div class="shortcut-item">
+            <span>Preview Refresh</span><kbd>Ctrl+Shift+R</kbd>
+          </div>
+          <div class="shortcut-item"><span>Undo</span><kbd>Ctrl+Z</kbd></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal-overlay" id="historyModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('historyModal')">
+          &times;
+        </button>
+        <h3><i class="fas fa-history"></i> Send History</h3>
+        <div class="history-list" id="historyList">
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No emails sent yet this session</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closetag.min.js"></script>
-    <!-- CodeMirror Hint Addons -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/html-hint.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/keymap/sublime.min.js"></script>
-    
-
-    <!-- Beautify -->
-    <script src="https://cdn.jsdelivr.net/npm/js-beautify@1.14.9/js/lib/beautify-html.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/matchtags.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/fold/foldcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/fold/foldgutter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/fold/xml-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/search.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/searchcursor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/jump-to-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/dialog/dialog.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/matchesonscrollbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/scroll/annotatescrollbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
 
     <script>
-      const editor = CodeMirror.fromTextArea(
-        document.getElementById("htmlCode"),
-        {
-          mode: "htmlmixed",
-          theme: "material-darker",
-          lineNumbers: true,
-          autoCloseTags: true,
-          matchBrackets: true,
-          lineWrapping: true,
-          extraKeys: {
-            "Ctrl-Space": "autocomplete", // trigger suggestions manually
-          },
-        }
+      // ============ STATE ============
+      let sendHistory = JSON.parse(
+        localStorage.getItem('emailSendHistory') || '[]',
       );
-      editor.on("change", () => {
-        const htmlContent = editor.getValue();
-        const iframe = document.getElementById("livePreview");
-        const iframeDoc =
-          iframe.contentDocument || iframe.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc.write(htmlContent);
-        iframeDoc.close();
-      });
-      editor.on("inputRead", function (cm, change) {
-        if (change.text[0] && /[a-zA-Z<]/.test(change.text[0])) {
-          cm.showHint({ completeSingle: false });
-        }
+      let autoSaveTimer = null;
+
+      // ============ EDITOR INIT ============
+      const htmlEditor = CodeMirror(document.getElementById('htmlEditor'), {
+        value: getDefaultTemplate(),
+        mode: 'htmlmixed',
+        theme: 'default',
+        lineNumbers: true,
+        autoCloseTags: true,
+        matchTags: true,
+        indentWithTabs: false,
+        indentUnit: 2,
+        lineWrapping: true,
+        foldGutter: true,
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+        extraKeys: {
+          'Ctrl-Space': 'autocomplete',
+          'Ctrl-/': 'toggleComment',
+          'Ctrl-H': function () {
+            findReplace();
+          },
+          'Ctrl-F': 'findPersistent',
+        },
       });
 
-      function beautifyCode() {
-        const currentCode = editor.getValue();
-        const formatted = html_beautify(currentCode, {
-          indent_size: 2,
-          wrap_line_length: 80,
-        });
-        editor.setValue(formatted);
+      // Editor events
+      htmlEditor.on('change', function () {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+          autoSaveDraft();
+          updatePreview();
+        }, 400);
+        updateStats();
+      });
+
+      htmlEditor.on('cursorActivity', function () {
+        const pos = htmlEditor.getCursor();
+        document.getElementById('cursorLine').textContent = pos.line + 1;
+        document.getElementById('cursorCol').textContent = pos.ch + 1;
+      });
+
+      // DOM refs
+      const toInput = document.getElementById('to');
+      const subjectInput = document.getElementById('subject');
+      const ccInput = document.getElementById('cc');
+      const bccInput = document.getElementById('bcc');
+      const sendBtn = document.getElementById('sendBtn');
+      const status = document.getElementById('status');
+      const previewFrame = document.getElementById('previewFrame');
+      const colorPicker = document.getElementById('colorPicker');
+      const colorHex = document.getElementById('colorHex');
+
+      // ============ INIT ============
+      loadDraft();
+      updatePreview();
+      updateStats();
+      loadTheme();
+
+      // Color picker sync
+      colorPicker.addEventListener('input', function () {
+        colorHex.value = this.value;
+      });
+
+      // ============ THEME ============
+      function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('themeIcon');
+        if (body.getAttribute('data-theme') === 'dark') {
+          body.removeAttribute('data-theme');
+          icon.className = 'fas fa-moon';
+          localStorage.setItem('emailEditorTheme', 'light');
+        } else {
+          body.setAttribute('data-theme', 'dark');
+          icon.className = 'fas fa-sun';
+          localStorage.setItem('emailEditorTheme', 'dark');
+        }
       }
 
-      async function sendEmail() {
-        const to = document.getElementById("to").value.trim();
-        const subject = document.getElementById("subject").value.trim();
-        const html = editor.getValue().trim();
+      function loadTheme() {
+        if (localStorage.getItem('emailEditorTheme') === 'dark') {
+          document.body.setAttribute('data-theme', 'dark');
+          document.getElementById('themeIcon').className = 'fas fa-sun';
+        }
+      }
 
-        if (!to || !subject || !html) {
-          showModal("❌ Please fill in all fields.");
+      // ============ AUTO-SAVE ============
+      function autoSaveDraft() {
+        const draft = {
+          to: toInput.value,
+          subject: subjectInput.value,
+          cc: ccInput.value,
+          bcc: bccInput.value,
+          html: htmlEditor.getValue(),
+          timestamp: Date.now(),
+        };
+        localStorage.setItem('emailEditorDraft', JSON.stringify(draft));
+        const indicator = document.getElementById('autoSaveIndicator');
+        indicator.innerHTML = '<span class="dot"></span> Saved just now';
+      }
+
+      function loadDraft() {
+        const draft = JSON.parse(
+          localStorage.getItem('emailEditorDraft') || 'null',
+        );
+        if (draft && draft.html) {
+          htmlEditor.setValue(draft.html);
+          if (draft.to) toInput.value = draft.to;
+          if (draft.subject) subjectInput.value = draft.subject;
+          if (draft.cc) ccInput.value = draft.cc;
+          if (draft.bcc) bccInput.value = draft.bcc;
+        }
+      }
+
+      // ============ STATS ============
+      function updateStats() {
+        const content = htmlEditor.getValue();
+        document.getElementById('lineCount').textContent =
+          htmlEditor.lineCount();
+        document.getElementById('charCount').textContent =
+          content.length.toLocaleString();
+        const words = content
+          .replace(/<[^>]*>/g, ' ')
+          .trim()
+          .split(/\s+/)
+          .filter((w) => w.length > 0);
+        document.getElementById('wordCount').textContent =
+          words.length.toLocaleString();
+        const bytes = new Blob([content]).size;
+        document.getElementById('sizeCount').textContent =
+          bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB';
+      }
+
+      // ============ PREVIEW ============
+      function updatePreview() {
+        const htmlContent = htmlEditor.getValue();
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        previewFrame.src = url;
+      }
+
+      function setPreviewMode(mode) {
+        const frame = document.getElementById('previewFrame');
+        frame.classList.remove('mobile', 'tablet');
+        if (mode !== 'desktop') frame.classList.add(mode);
+        document.querySelectorAll('.preview-mode-btn').forEach((b) => {
+          b.classList.toggle('active', b.dataset.mode === mode);
+        });
+      }
+
+      function openPreviewNewTab() {
+        const w = window.open('', '_blank');
+        w.document.write(htmlEditor.getValue());
+        w.document.close();
+      }
+
+      // ============ CC/BCC ============
+      function toggleCcBcc() {
+        const fields = document.getElementById('ccBccFields');
+        const text = document.getElementById('ccBccToggleText');
+        fields.classList.toggle('show');
+        text.textContent = fields.classList.contains('show')
+          ? 'Hide CC / BCC'
+          : 'Show CC / BCC';
+      }
+
+      // ============ FORMAT / MINIFY / VALIDATE ============
+      function formatHTML() {
+        try {
+          const formatted = html_beautify(htmlEditor.getValue(), {
+            indent_size: 2,
+            indent_char: ' ',
+            max_preserve_newlines: 2,
+            preserve_newlines: true,
+            indent_inner_html: true,
+            end_with_newline: true,
+          });
+          htmlEditor.setValue(formatted);
+          showToast('HTML formatted!', 'success');
+        } catch (e) {
+          showToast('Format error: ' + e.message, 'error');
+        }
+      }
+
+      function minifyHTML() {
+        const minified = htmlEditor
+          .getValue()
+          .replace(/\s+/g, ' ')
+          .replace(/>\s+</g, '><')
+          .replace(/\s+>/g, '>')
+          .replace(/<\s+/g, '<')
+          .trim();
+        htmlEditor.setValue(minified);
+        showToast('HTML minified!', 'success');
+      }
+
+      function validateHTML() {
+        const html = htmlEditor.getValue();
+        let errors = [];
+        if (!html.includes('<!DOCTYPE html>')) errors.push('Missing DOCTYPE');
+        if (!html.includes('<html')) errors.push('Missing <html> tag');
+        if (!html.includes('<head>') || !html.includes('</head>'))
+          errors.push('Incomplete <head>');
+        if (!html.includes('<body>') || !html.includes('</body>'))
+          errors.push('Incomplete <body>');
+        if (!html.includes('</html>')) errors.push('Missing </html>');
+
+        // Check unclosed tags
+        const openTags = (html.match(/<[a-z][a-z0-9]*[^/]*?>/gi) || []).length;
+        const closeTags = (html.match(/<\/[a-z][a-z0-9]*>/gi) || []).length;
+        if (Math.abs(openTags - closeTags) > 5)
+          errors.push('Possible unclosed tags detected');
+
+        if (errors.length === 0) {
+          showStatus('HTML structure looks valid!', 'success');
+        } else {
+          showStatus('Issues: ' + errors.join(' | '), 'error');
+        }
+      }
+
+      // ============ NORMALIZE HTML ============
+      function normalizeHTML() {
+        let html = htmlEditor.getValue().trim();
+        if (!html) {
+          showToast('Editor is empty', 'error');
           return;
         }
 
-        try {
-          const res = await fetch("/send", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ to, subject, html }),
+        let fixes = [];
+
+        // 1. Add DOCTYPE if missing
+        if (!/<!DOCTYPE\s+html>/i.test(html)) {
+          html = '<!DOCTYPE html>\n' + html;
+          fixes.push('Added <!DOCTYPE html>');
+        }
+
+        // 2. Wrap in <html> if missing
+        if (!/<html[\s>]/i.test(html)) {
+          const doctype = html.match(/^<!DOCTYPE[^>]*>\s*/i);
+          if (doctype) {
+            const rest = html.slice(doctype[0].length);
+            html = doctype[0] + '<html lang="en">\n' + rest + '\n</html>';
+          } else {
+            html = '<html lang="en">\n' + html + '\n</html>';
+          }
+          fixes.push('Wrapped content in <html>');
+        } else if (!/<\/html>/i.test(html)) {
+          html = html + '\n</html>';
+          fixes.push('Added closing </html>');
+        }
+
+        // 3. Add <head> if missing
+        if (!/<head[\s>]/i.test(html)) {
+          const headBlock =
+            '\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Email</title>\n</head>';
+          html = html.replace(/(<html[^>]*>)/i, '$1' + headBlock);
+          fixes.push('Added <head> with meta tags');
+        } else {
+          // Head exists, check for essentials inside it
+          const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+          if (headMatch) {
+            let headContent = headMatch[1];
+            let headChanged = false;
+
+            if (!/meta[^>]*charset/i.test(headContent)) {
+              headContent = '\n  <meta charset="UTF-8">' + headContent;
+              fixes.push('Added <meta charset>');
+              headChanged = true;
+            }
+            if (!/meta[^>]*viewport/i.test(headContent)) {
+              headContent =
+                headContent +
+                '\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">';
+              fixes.push('Added <meta viewport>');
+              headChanged = true;
+            }
+            if (!/<title[\s>]/i.test(headContent)) {
+              headContent = headContent + '\n  <title>Email</title>';
+              fixes.push('Added <title>');
+              headChanged = true;
+            }
+
+            if (headChanged) {
+              html = html.replace(
+                /<head[^>]*>[\s\S]*?<\/head>/i,
+                '<head>' + headContent + '\n</head>',
+              );
+            }
+          }
+          if (!/<\/head>/i.test(html)) {
+            html = html.replace(
+              /(<head[^>]*>[\s\S]*?)(<body)/i,
+              '$1\n</head>\n$2',
+            );
+            fixes.push('Added closing </head>');
+          }
+        }
+
+        // 4. Add <body> if missing
+        if (!/<body[\s>]/i.test(html)) {
+          // Find content between </head> and </html>
+          const afterHead = html.match(/<\/head>\s*([\s\S]*?)\s*<\/html>/i);
+          if (afterHead && afterHead[1].trim()) {
+            html = html.replace(
+              afterHead[1],
+              '\n<body>\n' + afterHead[1].trim() + '\n</body>\n',
+            );
+          } else {
+            html = html.replace(/<\/head>/i, '</head>\n<body>\n\n</body>');
+          }
+          fixes.push('Added <body> tags');
+        } else if (!/<\/body>/i.test(html)) {
+          html = html.replace(/<\/html>/i, '</body>\n</html>');
+          fixes.push('Added closing </body>');
+        }
+
+        // 5. Fix common unclosed tags in body content
+        const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+        if (bodyMatch) {
+          let bodyContent = bodyMatch[1];
+          const pairTags = [
+            'div',
+            'p',
+            'span',
+            'table',
+            'tr',
+            'td',
+            'th',
+            'thead',
+            'tbody',
+            'ul',
+            'ol',
+            'li',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            'a',
+            'section',
+            'article',
+            'header',
+            'footer',
+            'nav',
+            'main',
+            'aside',
+            'form',
+            'fieldset',
+            'label',
+            'select',
+            'option',
+            'textarea',
+            'button',
+            'strong',
+            'em',
+            'b',
+            'i',
+            'u',
+            'blockquote',
+            'pre',
+            'code',
+          ];
+
+          pairTags.forEach((tag) => {
+            const openRegex = new RegExp('<' + tag + '[\\s>]', 'gi');
+            const closeRegex = new RegExp('</' + tag + '\\s*>', 'gi');
+            const openCount = (bodyContent.match(openRegex) || []).length;
+            const closeCount = (bodyContent.match(closeRegex) || []).length;
+
+            if (openCount > closeCount) {
+              const diff = openCount - closeCount;
+              for (let i = 0; i < diff; i++) {
+                bodyContent += '\n</' + tag + '>';
+              }
+              fixes.push('Added ' + diff + ' missing </' + tag + '>');
+            }
           });
 
-          const result = await res.json();
-
-          if (res.ok) {
-            showModal("✅ Email sent successfully!");
-            resetForm();
-          } else {
-            showModal(
-              `❌ Failed to send email: ${result.message || "Unknown error"}`
+          if (fixes.length > 0) {
+            html = html.replace(
+              /<body[^>]*>[\s\S]*?<\/body>/i,
+              '<body>' + bodyContent + '\n</body>',
             );
           }
-        } catch (error) {
-          showModal(`❌ Error: ${error.message}`);
+        }
+
+        // 6. Self-close void elements that aren't closed properly
+        const voidTags = [
+          'img',
+          'br',
+          'hr',
+          'input',
+          'meta',
+          'link',
+          'source',
+          'track',
+          'wbr',
+          'col',
+        ];
+        voidTags.forEach((tag) => {
+          const badClose = new RegExp('</' + tag + '\\s*>', 'gi');
+          if (badClose.test(html)) {
+            html = html.replace(badClose, '');
+            fixes.push('Removed invalid </' + tag + '>');
+          }
+        });
+
+        // Apply
+        if (fixes.length > 0) {
+          // Format after fixing
+          try {
+            html = html_beautify(html, {
+              indent_size: 2,
+              indent_char: ' ',
+              max_preserve_newlines: 2,
+              preserve_newlines: true,
+              indent_inner_html: true,
+              end_with_newline: true,
+            });
+          } catch (e) {
+            /* skip formatting if it fails */
+          }
+
+          htmlEditor.setValue(html);
+          showStatus(
+            'Fixed ' + fixes.length + ' issue(s): ' + fixes.join(' | '),
+            'info',
+          );
+          showToast(fixes.length + ' issue(s) fixed!', 'success');
+        } else {
+          showStatus('HTML is already well-structured!', 'success');
+          showToast('No issues found!', 'info');
         }
       }
 
-      function showModal(message) {
-        document.getElementById("modalMessage").textContent = message;
-        const modal = new bootstrap.Modal(
-          document.getElementById("messageModal")
-        );
-        modal.show();
+      // ============ UNDO / REDO ============
+      function undoEditor() {
+        htmlEditor.undo();
+      }
+      function redoEditor() {
+        htmlEditor.redo();
       }
 
-      function resetForm() {
-        document.getElementById("to").value = "";
-        document.getElementById("subject").value = "";
-        editor.setValue("");
+      // ============ FIND & REPLACE ============
+      function findReplace() {
+        htmlEditor.execCommand('replace');
       }
+
+      // ============ FULLSCREEN ============
+      function toggleFullscreen() {
+        const section = document.getElementById('editorSection');
+        section.classList.toggle('fullscreen');
+        const icon = document.getElementById('fullscreenIcon');
+        icon.className = section.classList.contains('fullscreen')
+          ? 'fas fa-compress'
+          : 'fas fa-expand';
+        setTimeout(() => htmlEditor.refresh(), 100);
+      }
+
+      // ============ COLOR PICKER ============
+      function copyColor() {
+        navigator.clipboard.writeText(colorHex.value);
+        showToast('Color ' + colorHex.value + ' copied!', 'info');
+      }
+
+      // ============ SNIPPETS ============
+      function insertSnippet(type) {
+        const snippets = {
+          button: `<table cellpadding="0" cellspacing="0" border="0" style="margin: 20px auto;">
+  <tr>
+    <td align="center" style="background: #007bff; border-radius: 6px;">
+      <a href="#" style="display: inline-block; padding: 12px 30px; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px;">Click Here</a>
+    </td>
+  </tr>
+</table>`,
+          table: `<table width="100%" cellpadding="10" cellspacing="0" border="0" style="border-collapse: collapse; margin: 20px 0;">
+  <tr style="background: #007bff; color: white;">
+    <th style="padding: 12px; text-align: left;">Header 1</th>
+    <th style="padding: 12px; text-align: left;">Header 2</th>
+    <th style="padding: 12px; text-align: left;">Header 3</th>
+  </tr>
+  <tr>
+    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">Data 1</td>
+    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">Data 2</td>
+    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">Data 3</td>
+  </tr>
+  <tr style="background: #f8f9fa;">
+    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">Data 4</td>
+    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">Data 5</td>
+    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">Data 6</td>
+  </tr>
+</table>`,
+          image: `<img src="https://via.placeholder.com/600x200" alt="Image" style="max-width: 100%; height: auto; display: block; margin: 20px auto; border-radius: 8px;">`,
+          divider: `<hr style="border: none; border-top: 2px solid #dee2e6; margin: 25px 0;">`,
+          spacer: `<div style="height: 30px; line-height: 30px; font-size: 1px;">&nbsp;</div>`,
+          heading: `<h2 style="color: #333; font-size: 24px; margin: 20px 0 10px; padding-bottom: 10px; border-bottom: 2px solid #007bff;">Section Heading</h2>`,
+          columns: `<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td width="48%" valign="top" style="padding-right: 2%;">
+      <h3 style="color: #333;">Left Column</h3>
+      <p style="color: #666; line-height: 1.6;">Content for the left column goes here.</p>
+    </td>
+    <td width="4%"></td>
+    <td width="48%" valign="top">
+      <h3 style="color: #333;">Right Column</h3>
+      <p style="color: #666; line-height: 1.6;">Content for the right column goes here.</p>
+    </td>
+  </tr>
+</table>`,
+          social: `<table cellpadding="0" cellspacing="0" border="0" style="margin: 20px auto;">
+  <tr>
+    <td style="padding: 0 8px;"><a href="#" style="color: #1877f2; text-decoration: none; font-size: 24px;">&#x1F30D; Facebook</a></td>
+    <td style="padding: 0 8px;"><a href="#" style="color: #1da1f2; text-decoration: none; font-size: 24px;">&#x1F426; Twitter</a></td>
+    <td style="padding: 0 8px;"><a href="#" style="color: #e4405f; text-decoration: none; font-size: 24px;">&#x1F4F7; Instagram</a></td>
+    <td style="padding: 0 8px;"><a href="#" style="color: #0077b5; text-decoration: none; font-size: 24px;">&#x1F4BC; LinkedIn</a></td>
+  </tr>
+</table>`,
+          footer: `<div style="background: #f8f9fa; padding: 25px; text-align: center; border-top: 1px solid #dee2e6; margin-top: 20px;">
+  <p style="color: #999; font-size: 12px; margin: 0 0 5px;">Company Name | 123 Street, City, Country</p>
+  <p style="color: #999; font-size: 12px; margin: 0;">Copyright &copy; 2025. All rights reserved.</p>
+</div>`,
+          unsubscribe: `<p style="text-align: center; font-size: 11px; color: #999; margin-top: 20px;">
+  You're receiving this because you subscribed to our mailing list.<br>
+  <a href="#" style="color: #999;">Unsubscribe</a> | <a href="#" style="color: #999;">Manage Preferences</a>
+</p>`,
+        };
+        const snippet = snippets[type];
+        if (snippet) {
+          const cursor = htmlEditor.getCursor();
+          htmlEditor.replaceRange('\n' + snippet + '\n', cursor);
+          showToast(
+            type.charAt(0).toUpperCase() + type.slice(1) + ' inserted!',
+            'success',
+          );
+        }
+      }
+
+      // ============ INSERT LINK ============
+      function showInsertLinkModal() {
+        document.getElementById('linkText').value = '';
+        document.getElementById('linkUrl').value = '';
+        openModal('linkModal');
+      }
+
+      function insertLink() {
+        const text = document.getElementById('linkText').value || 'Click here';
+        const url = document.getElementById('linkUrl').value || '#';
+        const style = document.getElementById('linkStyle').value;
+        let html;
+        if (style === 'button') {
+          html = `<a href="${escapeHtml(url)}" style="display: inline-block; padding: 12px 25px; background: #007bff; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">${escapeHtml(text)}</a>`;
+        } else {
+          html = `<a href="${escapeHtml(url)}" style="color: #007bff; text-decoration: underline;">${escapeHtml(text)}</a>`;
+        }
+        htmlEditor.replaceRange(html, htmlEditor.getCursor());
+        closeModal('linkModal');
+        showToast('Link inserted!', 'success');
+      }
+
+      // ============ INSERT IMAGE ============
+      function showInsertImageModal() {
+        document.getElementById('imageUrl').value = '';
+        document.getElementById('imageAlt').value = '';
+        document.getElementById('imageWidth').value = '100%';
+        openModal('imageModal');
+      }
+
+      function insertImage() {
+        const url = document.getElementById('imageUrl').value;
+        const alt = document.getElementById('imageAlt').value || 'Image';
+        const width = document.getElementById('imageWidth').value || '100%';
+        if (!url) {
+          showToast('Please enter an image URL', 'error');
+          return;
+        }
+        const html = `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" style="max-width: ${escapeHtml(width)}; height: auto; display: block; margin: 10px auto;">`;
+        htmlEditor.replaceRange(html, htmlEditor.getCursor());
+        closeModal('imageModal');
+        showToast('Image inserted!', 'success');
+      }
+
+      // ============ TEMPLATES ============
+      function showTemplateModal() {
+        openModal('templateModal');
+      }
+
+      function insertTemplate(type) {
+        const templates = {
+          welcome: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome Email</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f2f5; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; }
+    .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; color: white; }
+    .hero h1 { margin: 0 0 10px; font-size: 32px; }
+    .hero p { margin: 0; font-size: 16px; opacity: 0.9; }
+    .body { padding: 35px 30px; }
+    .body h2 { color: #333; margin-top: 0; }
+    .body p { color: #555; line-height: 1.7; }
+    .cta { text-align: center; margin: 25px 0; }
+    .cta a { display: inline-block; padding: 14px 35px; background: #667eea; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; }
+    .steps { margin: 25px 0; }
+    .step { display: flex; align-items: center; margin: 12px 0; }
+    .step-num { background: #667eea; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 14px; }
+    .step-text { color: #555; }
+    .footer { background: #f8f9fa; padding: 20px 30px; text-align: center; color: #999; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <h1>Welcome Aboard!</h1>
+      <p>We're thrilled to have you with us</p>
+    </div>
+    <div class="body">
+      <h2>Hello there!</h2>
+      <p>Thank you for joining us! Your account has been successfully created and you're ready to get started.</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text">Complete your profile</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text">Explore our features</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text">Connect with the community</div></div>
+      </div>
+      <div class="cta"><a href="#">Get Started</a></div>
+      <p>If you need any help, feel free to reach out to our support team.</p>
+    </div>
+    <div class="footer">
+      <p>&copy; 2025 Your Company. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`,
+          newsletter: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Newsletter</title>
+  <style>
+    body { font-family: Georgia, serif; margin: 0; padding: 0; background: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; }
+    .header { background: #1a1a2e; padding: 30px; text-align: center; }
+    .header h1 { color: #fff; margin: 0; font-size: 28px; letter-spacing: 2px; }
+    .header p { color: #ccc; margin: 8px 0 0; font-size: 14px; }
+    .featured img { width: 100%; display: block; }
+    .featured-body { padding: 25px 30px; }
+    .featured-body h2 { color: #1a1a2e; margin-top: 0; font-size: 22px; }
+    .featured-body p { color: #555; line-height: 1.7; }
+    .articles { padding: 0 30px 25px; }
+    .article { border-bottom: 1px solid #eee; padding: 18px 0; }
+    .article:last-child { border-bottom: none; }
+    .article h3 { color: #333; margin: 0 0 6px; font-size: 17px; }
+    .article p { color: #666; margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+    .article a { color: #e94560; text-decoration: none; font-weight: bold; font-size: 13px; }
+    .footer { background: #1a1a2e; padding: 25px 30px; text-align: center; color: #888; font-size: 12px; }
+    .footer a { color: #e94560; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>THE WEEKLY DIGEST</h1>
+      <p>Your curated news roundup</p>
+    </div>
+    <div class="featured">
+      <img src="https://via.placeholder.com/600x250/1a1a2e/ffffff?text=Featured+Story" alt="Featured">
+      <div class="featured-body">
+        <h2>Featured Article Title</h2>
+        <p>A compelling summary of the featured article that draws the reader in and makes them want to learn more about this exciting topic.</p>
+        <a href="#" style="color: #e94560; font-weight: bold;">Read More &rarr;</a>
+      </div>
+    </div>
+    <div class="articles">
+      <div class="article">
+        <h3>Article Title One</h3>
+        <p>Brief description of this interesting article and what the reader will learn.</p>
+        <a href="#">Read More &rarr;</a>
+      </div>
+      <div class="article">
+        <h3>Article Title Two</h3>
+        <p>Brief description of this interesting article and what the reader will learn.</p>
+        <a href="#">Read More &rarr;</a>
+      </div>
+      <div class="article">
+        <h3>Article Title Three</h3>
+        <p>Brief description of this interesting article and what the reader will learn.</p>
+        <a href="#">Read More &rarr;</a>
+      </div>
+    </div>
+    <div class="footer">
+      <p>&copy; 2025 Newsletter. <a href="#">Unsubscribe</a></p>
+    </div>
+  </div>
+</body>
+</html>`,
+          promotional: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Special Offer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 10px; overflow: hidden; }
+    .banner { background: linear-gradient(135deg, #ff6b6b, #ee5a24); padding: 40px 30px; text-align: center; color: white; }
+    .banner h1 { margin: 0; font-size: 36px; text-transform: uppercase; letter-spacing: 3px; }
+    .banner .discount { font-size: 72px; font-weight: 900; margin: 15px 0; }
+    .banner p { font-size: 18px; margin: 0; opacity: 0.9; }
+    .body { padding: 30px; text-align: center; }
+    .body p { color: #555; font-size: 16px; line-height: 1.7; }
+    .cta { text-align: center; margin: 25px 0; }
+    .cta a { display: inline-block; padding: 16px 45px; background: #ee5a24; color: #fff; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 18px; text-transform: uppercase; }
+    .timer { background: #fff3cd; padding: 15px; text-align: center; color: #856404; font-weight: bold; }
+    .footer { padding: 20px; text-align: center; color: #999; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="banner">
+      <h1>Flash Sale</h1>
+      <div class="discount">50% OFF</div>
+      <p>On all products for a limited time!</p>
+    </div>
+    <div class="timer">&#x23F0; Hurry! Offer ends in 24 hours</div>
+    <div class="body">
+      <p>Don't miss out on our biggest sale of the year. Get incredible deals on your favorite products.</p>
+      <table width="100%" cellpadding="10">
+        <tr>
+          <td width="33%" style="text-align: center;">
+            <img src="https://via.placeholder.com/150x150/ddd/333?text=Product+1" style="border-radius: 8px; width: 100%;" alt="Product">
+            <h4 style="color: #333; margin: 10px 0 5px;">Product One</h4>
+            <span style="color: #999; text-decoration: line-through;">$99</span>
+            <span style="color: #ee5a24; font-weight: bold; font-size: 18px;"> $49</span>
+          </td>
+          <td width="33%" style="text-align: center;">
+            <img src="https://via.placeholder.com/150x150/ddd/333?text=Product+2" style="border-radius: 8px; width: 100%;" alt="Product">
+            <h4 style="color: #333; margin: 10px 0 5px;">Product Two</h4>
+            <span style="color: #999; text-decoration: line-through;">$79</span>
+            <span style="color: #ee5a24; font-weight: bold; font-size: 18px;"> $39</span>
+          </td>
+          <td width="33%" style="text-align: center;">
+            <img src="https://via.placeholder.com/150x150/ddd/333?text=Product+3" style="border-radius: 8px; width: 100%;" alt="Product">
+            <h4 style="color: #333; margin: 10px 0 5px;">Product Three</h4>
+            <span style="color: #999; text-decoration: line-through;">$129</span>
+            <span style="color: #ee5a24; font-weight: bold; font-size: 18px;"> $64</span>
+          </td>
+        </tr>
+      </table>
+      <div class="cta"><a href="#">Shop Now</a></div>
+    </div>
+    <div class="footer">
+      <p>&copy; 2025 Your Store. <a href="#" style="color: #999;">Unsubscribe</a></p>
+    </div>
+  </div>
+</body>
+</html>`,
+          invoice: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice</title>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; }
+    .invoice-info { padding: 25px 30px; }
+    .invoice-info td { padding: 4px 0; color: #555; font-size: 14px; }
+    .items { padding: 0 30px; }
+    .items table { width: 100%; border-collapse: collapse; }
+    .items th { background: #2c3e50; color: #fff; padding: 12px; text-align: left; font-size: 13px; }
+    .items td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; color: #555; }
+    .items tr:nth-child(even) { background: #f9f9f9; }
+    .total-section { padding: 20px 30px; text-align: right; }
+    .total-section td { padding: 5px 15px; font-size: 14px; }
+    .footer { background: #f8f9fa; padding: 20px 30px; text-align: center; color: #999; font-size: 12px; border-top: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="padding: 30px; border-bottom: 3px solid #2c3e50;">
+      <table width="100%"><tr>
+        <td><h1 style="margin: 0; color: #2c3e50; font-size: 28px;">INVOICE</h1></td>
+        <td style="text-align: right; color: #555; font-size: 14px;">Invoice #: <strong>INV-0001</strong><br>Date: <strong>Jan 15, 2025</strong></td>
+      </tr></table>
+    </div>
+    <div class="invoice-info">
+      <table><tr><td style="font-weight:bold;color:#333;width:120px;">Bill To:</td><td>John Doe</td></tr>
+      <tr><td style="font-weight:bold;color:#333;">Company:</td><td>Acme Corporation</td></tr>
+      <tr><td style="font-weight:bold;color:#333;">Email:</td><td>john@example.com</td></tr></table>
+    </div>
+    <div class="items">
+      <table><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+      <tr><td>Web Design Service</td><td>1</td><td>$500.00</td><td>$500.00</td></tr>
+      <tr><td>Development Hours</td><td>10</td><td>$75.00</td><td>$750.00</td></tr>
+      <tr><td>Hosting (Annual)</td><td>1</td><td>$120.00</td><td>$120.00</td></tr></table>
+    </div>
+    <div class="total-section">
+      <table><tr><td>Subtotal:</td><td>$1,370.00</td></tr>
+      <tr><td>Tax (10%):</td><td>$137.00</td></tr>
+      <tr><td style="font-size:20px;font-weight:bold;color:#2c3e50;border-top:2px solid #2c3e50;padding-top:10px;">Total:</td>
+      <td style="font-size:20px;font-weight:bold;color:#2c3e50;border-top:2px solid #2c3e50;padding-top:10px;">$1,507.00</td></tr></table>
+    </div>
+    <div class="footer"><p>Thank you for your business! Payment is due within 30 days.</p></div>
+  </div>
+</body>
+</html>`,
+          notification: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notification</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f2f5; }
+    .container { max-width: 500px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; }
+    .icon-section { text-align: center; padding: 35px 20px 15px; }
+    .icon-circle { display: inline-block; width: 70px; height: 70px; border-radius: 50%; background: #e3f2fd; line-height: 70px; font-size: 32px; }
+    .body { padding: 15px 30px 30px; text-align: center; }
+    .body h2 { color: #333; margin: 0 0 12px; font-size: 22px; }
+    .body p { color: #666; line-height: 1.7; margin: 0 0 20px; }
+    .info-box { background: #f8f9fa; border-radius: 8px; padding: 18px; margin: 15px 0; text-align: left; }
+    .cta a { display: inline-block; padding: 12px 30px; background: #007bff; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; }
+    .footer { padding: 20px; text-align: center; color: #999; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon-section"><div class="icon-circle">&#x1F514;</div></div>
+    <div class="body">
+      <h2>New Activity Alert</h2>
+      <p>Something important happened on your account that requires your attention.</p>
+      <div class="info-box">
+        <table width="100%">
+          <tr><td style="color:#555;padding:5px 0;">Event:</td><td style="color:#333;font-weight:bold;padding:5px 0;text-align:right;">Login from new device</td></tr>
+          <tr><td style="color:#555;padding:5px 0;">Time:</td><td style="color:#333;font-weight:bold;padding:5px 0;text-align:right;">Jan 15, 2025 3:45 PM</td></tr>
+          <tr><td style="color:#555;padding:5px 0;">Location:</td><td style="color:#333;font-weight:bold;padding:5px 0;text-align:right;">New York, US</td></tr>
+        </table>
+      </div>
+      <div class="cta" style="margin-top:20px;"><a href="#">Review Activity</a></div>
+    </div>
+    <div class="footer"><p>If this wasn't you, please secure your account immediately.</p></div>
+  </div>
+</body>
+</html>`,
+          minimal: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 40px 20px; background: #fff; color: #333; }
+    .container { max-width: 560px; margin: 0 auto; }
+    h1 { font-size: 24px; margin-bottom: 20px; }
+    p { line-height: 1.8; color: #555; margin-bottom: 16px; }
+    a.btn { display: inline-block; padding: 10px 22px; background: #111; color: #fff; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+    .divider { border-top: 1px solid #eee; margin: 30px 0; }
+    .sig { font-size: 14px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hello,</h1>
+    <p>This is a clean, minimal email template. Perfect for personal messages, simple notifications, or transactional emails.</p>
+    <p>Keep it simple. Keep it effective.</p>
+    <a href="#" class="btn">Take Action</a>
+    <div class="divider"></div>
+    <p class="sig">Best regards,<br><strong>Your Name</strong></p>
+  </div>
+</body>
+</html>`,
+          password_reset: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Reset</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f2f5; }
+    .container { max-width: 500px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; }
+    .header { background: #2c3e50; padding: 30px; text-align: center; }
+    .header h1 { color: #fff; margin: 0; font-size: 22px; }
+    .icon-section { text-align: center; padding: 30px 20px 10px; }
+    .icon { display: inline-block; width: 80px; height: 80px; background: #ffeaa7; border-radius: 50%; line-height: 80px; font-size: 36px; }
+    .body { padding: 15px 30px 30px; text-align: center; }
+    .body h2 { color: #333; font-size: 20px; margin: 0 0 12px; }
+    .body p { color: #666; line-height: 1.7; }
+    .code-box { background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; padding: 18px; margin: 20px 0; }
+    .code-box .code { font-size: 32px; letter-spacing: 8px; font-weight: bold; color: #2c3e50; font-family: monospace; }
+    .cta { margin: 20px 0; }
+    .cta a { display: inline-block; padding: 14px 35px; background: #2c3e50; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; }
+    .warning { background: #fff3cd; padding: 12px; border-radius: 6px; margin: 15px 0; font-size: 13px; color: #856404; }
+    .footer { padding: 20px; text-align: center; color: #999; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>&#x1F512; Password Reset</h1></div>
+    <div class="icon-section"><div class="icon">&#x1F511;</div></div>
+    <div class="body">
+      <h2>Reset Your Password</h2>
+      <p>We received a request to reset your password. Use the code below or click the button:</p>
+      <div class="code-box"><div class="code">847293</div></div>
+      <div class="cta"><a href="#">Reset Password</a></div>
+      <div class="warning">&#x26A0; This code expires in 15 minutes. If you didn't request this, please ignore this email.</div>
+    </div>
+    <div class="footer"><p>&copy; 2025 Your Company. All rights reserved.</p></div>
+  </div>
+</body>
+</html>`,
+          event: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Invitation</title>
+  <style>
+    body { font-family: 'Georgia', serif; margin: 0; padding: 0; background: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; }
+    .banner { background: linear-gradient(135deg, #0c3547 0%, #1a6b4a 100%); padding: 50px 30px; text-align: center; color: white; }
+    .banner .eyebrow { text-transform: uppercase; letter-spacing: 3px; font-size: 12px; opacity: 0.8; margin-bottom: 15px; }
+    .banner h1 { margin: 0; font-size: 34px; line-height: 1.3; }
+    .banner .date { font-size: 18px; margin-top: 15px; opacity: 0.9; }
+    .details { padding: 30px; }
+    .detail-card { background: #f8f9fa; border-radius: 8px; padding: 18px; margin: 12px 0; }
+    .body-text { padding: 0 30px 20px; }
+    .body-text p { color: #555; line-height: 1.8; }
+    .cta { text-align: center; padding: 10px 30px 30px; }
+    .cta a { display: inline-block; padding: 14px 40px; background: #0c3547; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; }
+    .footer { background: #f8f9fa; padding: 20px 30px; text-align: center; color: #999; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="banner">
+      <div class="eyebrow">You're Invited</div>
+      <h1>Annual Tech Conference 2025</h1>
+      <div class="date">&#x1F4C5; Saturday, March 15, 2025</div>
+    </div>
+    <div class="details">
+      <div class="detail-card">
+        <table width="100%"><tr>
+          <td style="font-size:20px;width:35px;">&#x1F4CD;</td>
+          <td><div style="color:#999;font-size:12px;text-transform:uppercase;">Location</div><div style="color:#333;font-weight:bold;">Grand Convention Center, 456 Tech Ave</div></td>
+        </tr></table>
+      </div>
+      <div class="detail-card">
+        <table width="100%"><tr>
+          <td style="font-size:20px;width:35px;">&#x1F552;</td>
+          <td><div style="color:#999;font-size:12px;text-transform:uppercase;">Time</div><div style="color:#333;font-weight:bold;">9:00 AM - 6:00 PM</div></td>
+        </tr></table>
+      </div>
+      <div class="detail-card">
+        <table width="100%"><tr>
+          <td style="font-size:20px;width:35px;">&#x1F3AB;</td>
+          <td><div style="color:#999;font-size:12px;text-transform:uppercase;">Tickets</div><div style="color:#333;font-weight:bold;">Free admission - RSVP required</div></td>
+        </tr></table>
+      </div>
+    </div>
+    <div class="body-text">
+      <p>Join us for a day of inspiring talks, networking, and innovation. Meet industry leaders and discover the latest trends in technology.</p>
+    </div>
+    <div class="cta"><a href="#">RSVP Now</a></div>
+    <div class="footer"><p>Can't make it? <a href="#" style="color:#0c3547;">Let us know</a></p></div>
+  </div>
+</body>
+</html>`,
+        };
+
+        if (templates[type]) {
+          htmlEditor.setValue(templates[type]);
+          updatePreview();
+          closeModal('templateModal');
+          showToast(
+            type.replace('_', ' ').charAt(0).toUpperCase() +
+              type.replace('_', ' ').slice(1) +
+              ' template loaded!',
+            'success',
+          );
+        }
+      }
+
+      // ============ SEND EMAIL ============
+      async function sendEmail() {
+        const to = toInput.value.trim();
+        const subject = subjectInput.value.trim();
+        const html = htmlEditor.getValue().trim();
+
+        if (!to || !subject) {
+          showStatus('Please fill in recipient and subject', 'error');
+          return;
+        }
+        if (!html) {
+          showStatus('Please enter HTML content', 'error');
+          return;
+        }
+
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        showStatus('Sending email...', 'loading');
+
+        try {
+          const payload = { to, subject, html };
+          const cc = ccInput.value.trim();
+          const bcc = bccInput.value.trim();
+          if (cc) payload.cc = cc;
+          if (bcc) payload.bcc = bcc;
+
+          const response = await fetch('/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            showStatus('Email sent successfully!', 'success');
+            showToast('Email sent!', 'success');
+            addToHistory(to, subject);
+            subjectInput.value = '';
+          } else {
+            showStatus('Failed: ' + result.message, 'error');
+          }
+        } catch (error) {
+          showStatus('Network error: ' + error.message, 'error');
+        }
+
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email';
+      }
+
+      async function sendTestEmail() {
+        const html = htmlEditor.getValue().trim();
+        if (!html) {
+          showToast('Enter HTML content first', 'error');
+          return;
+        }
+
+        const testTo = prompt('Enter your email address for test:');
+        if (!testTo) return;
+
+        sendBtn.disabled = true;
+        showStatus('Sending test email...', 'loading');
+
+        try {
+          const response = await fetch('/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: testTo,
+              subject: '[TEST] ' + (subjectInput.value || 'Email Preview'),
+              html,
+            }),
+          });
+          const result = await response.json();
+          if (response.ok) {
+            showStatus('Test email sent to ' + testTo, 'success');
+            showToast('Test sent!', 'success');
+            addToHistory(testTo, '[TEST] ' + (subjectInput.value || 'Preview'));
+          } else {
+            showStatus('Failed: ' + result.message, 'error');
+          }
+        } catch (error) {
+          showStatus('Error: ' + error.message, 'error');
+        }
+        sendBtn.disabled = false;
+      }
+
+      // ============ HISTORY ============
+      function addToHistory(to, subject) {
+        sendHistory.unshift({ to, subject, time: new Date().toLocaleString() });
+        if (sendHistory.length > 50) sendHistory.pop();
+        localStorage.setItem('emailSendHistory', JSON.stringify(sendHistory));
+      }
+
+      function showHistoryModal() {
+        const list = document.getElementById('historyList');
+        if (sendHistory.length === 0) {
+          list.innerHTML =
+            '<div class="empty-state"><i class="fas fa-inbox"></i><p>No emails sent yet</p></div>';
+        } else {
+          list.innerHTML = sendHistory
+            .map(
+              (h) =>
+                `<div class="history-item">
+                        <div><span class="history-to">${escapeHtml(h.to)}</span><span class="history-subject"> - ${escapeHtml(h.subject)}</span></div>
+                        <span class="history-time">${escapeHtml(h.time)}</span>
+                    </div>`,
+            )
+            .join('');
+        }
+        openModal('historyModal');
+      }
+
+      // ============ DOWNLOAD / IMPORT / COPY ============
+      function downloadHTML() {
+        const html = htmlEditor.getValue();
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download =
+          (subjectInput.value || 'email-template')
+            .replace(/[^a-z0-9]/gi, '-')
+            .toLowerCase() + '.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('HTML downloaded!', 'success');
+      }
+
+      function importHTML() {
+        document.getElementById('importFile').click();
+      }
+
+      function handleImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          htmlEditor.setValue(e.target.result);
+          updatePreview();
+          showToast('File imported: ' + file.name, 'success');
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+      }
+
+      function copyToClipboard() {
+        navigator.clipboard
+          .writeText(htmlEditor.getValue())
+          .then(() => {
+            showToast('HTML copied to clipboard!', 'success');
+          })
+          .catch(() => {
+            // Fallback
+            const ta = document.createElement('textarea');
+            ta.value = htmlEditor.getValue();
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('HTML copied!', 'success');
+          });
+      }
+
+      // ============ CLEAR ============
+      function clearAll() {
+        if (confirm('Clear all content? This cannot be undone.')) {
+          toInput.value = '';
+          subjectInput.value = '';
+          ccInput.value = '';
+          bccInput.value = '';
+          htmlEditor.setValue('');
+          previewFrame.src = '';
+          status.style.display = 'none';
+          localStorage.removeItem('emailEditorDraft');
+          showToast('All cleared!', 'info');
+        }
+      }
+
+      // ============ MODALS ============
+      function openModal(id) {
+        document.getElementById(id).classList.add('show');
+      }
+      function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
+      }
+
+      // Close modal on overlay click
+      document.querySelectorAll('.modal-overlay').forEach((overlay) => {
+        overlay.addEventListener('click', function (e) {
+          if (e.target === this) this.classList.remove('show');
+        });
+      });
+
+      // ============ STATUS & TOAST ============
+      function showStatus(message, type) {
+        status.textContent = message;
+        status.className = 'status ' + type;
+        status.style.display = 'block';
+        if (type !== 'loading') {
+          setTimeout(() => {
+            status.style.display = 'none';
+          }, 5000);
+        }
+      }
+
+      function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast ' + type;
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      }
+
+      // ============ SHORTCUTS MODAL ============
+      function showShortcutsModal() {
+        openModal('shortcutsModal');
+      }
+
+      // ============ UTILS ============
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function getDefaultTemplate() {
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional Email</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; color: #333; }
+    .email-container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
+    .header h1 { margin: 0; font-size: 28px; }
+    .content { padding: 30px; }
+    .content h2 { color: #333; margin-bottom: 15px; }
+    .content p { margin-bottom: 15px; line-height: 1.8; }
+    .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 15px 0; }
+    .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; border-top: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Welcome to Our Service!</h1>
+    </div>
+    <div class="content">
+      <h2>Hello there!</h2>
+      <p>This is a professional HTML email template. Customize it or pick from 8 built-in templates using the Templates button above.</p>
+      <p>Key features of this editor:</p>
+      <ul>
+        <li>8 Professional email templates</li>
+        <li>10+ HTML snippet components</li>
+        <li>Desktop, Tablet & Mobile preview</li>
+        <li>Dark mode support</li>
+        <li>Auto-save drafts</li>
+        <li>CC/BCC support</li>
+        <li>Import & export HTML files</li>
+        <li>Color picker & link/image inserter</li>
+        <li>Find & replace in editor</li>
+        <li>Send history tracking</li>
+      </ul>
+      <p style="text-align: center;">
+        <a href="#" class="button">Call to Action</a>
+      </p>
+    </div>
+    <div class="footer">
+      <p>&copy; 2025 Email Editor Pro. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+      }
+
+      // ============ KEYBOARD SHORTCUTS ============
+      document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey || e.metaKey) {
+          if (e.key === 's') {
+            e.preventDefault();
+            downloadHTML();
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            sendEmail();
+          } else if (e.shiftKey && e.key === 'F') {
+            e.preventDefault();
+            formatHTML();
+          } else if (e.shiftKey && e.key === 'C') {
+            e.preventDefault();
+            copyToClipboard();
+          } else if (e.shiftKey && e.key === 'R') {
+            e.preventDefault();
+            updatePreview();
+          }
+        }
+        if (e.key === 'F11') {
+          e.preventDefault();
+          toggleFullscreen();
+        }
+        if (e.key === 'Escape') {
+          document
+            .querySelectorAll('.modal-overlay.show')
+            .forEach((m) => m.classList.remove('show'));
+          const section = document.getElementById('editorSection');
+          if (section.classList.contains('fullscreen')) {
+            section.classList.remove('fullscreen');
+            document.getElementById('fullscreenIcon').className =
+              'fas fa-expand';
+            htmlEditor.refresh();
+          }
+        }
+      });
+
+      // Auto-focus
+      window.addEventListener('load', () => toInput.focus());
     </script>
   </body>
 </html>
